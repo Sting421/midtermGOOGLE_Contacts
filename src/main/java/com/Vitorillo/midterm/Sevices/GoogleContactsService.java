@@ -95,38 +95,90 @@ public class GoogleContactsService {
         String email, 
         String phoneNumber
     ) throws IOException {
-        PeopleService peopleService = getPeopleService(authentication);
-        
-        Person person = new Person();
-        
-        // Add Names
-        person.setNames(List.of(new Name()
-            .setGivenName(firstName)
-            .setFamilyName(lastName)
-        ));
-        
-        // Add Email
-        if (email != null) {
-            person.setEmailAddresses(List.of(new EmailAddress()
-                .setValue(email)
+        try {
+            System.out.println("Attempting to update contact with resource name: " + resourceName);
+            PeopleService peopleService = getPeopleService(authentication);
+            
+            // First, get the existing contact to retrieve the etag
+            Person existingContact = peopleService.people().get(resourceName)
+                .setPersonFields("names,emailAddresses,phoneNumbers")
+                .execute();
+                
+            String etag = existingContact.getEtag();
+            System.out.println("Retrieved etag: " + etag);
+            
+            // Create the updated person with the same etag
+            Person person = new Person();
+            person.setEtag(etag);
+            
+            // Add Names
+            person.setNames(List.of(new Name()
+                .setGivenName(firstName)
+                .setFamilyName(lastName)
             ));
+            
+            // Add Email
+            if (email != null) {
+                person.setEmailAddresses(List.of(new EmailAddress()
+                    .setValue(email)
+                ));
+            }
+            
+            // Add Phone Number
+            if (phoneNumber != null) {
+                person.setPhoneNumbers(List.of(new PhoneNumber()
+                    .setValue(phoneNumber)
+                ));
+            }
+            
+            // Update the contact with the etag included
+            Person updatedPerson = peopleService.people().updateContact(resourceName, person)
+                .setUpdatePersonFields("names,emailAddresses,phoneNumbers")
+                .execute();
+                
+            System.out.println("Successfully updated contact: " + resourceName);
+            return updatedPerson;
+        } catch (Exception e) {
+            System.err.println("Error updating contact: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Rethrow to allow controller to handle it
         }
-        
-        // Add Phone Number
-        if (phoneNumber != null) {
-            person.setPhoneNumbers(List.of(new PhoneNumber()
-                .setValue(phoneNumber)
-            ));
+    }
+
+    public Person getContact(
+        OAuth2AuthenticationToken authentication, 
+        String resourceName
+    ) throws IOException {
+        try {
+            System.out.println("Attempting to get contact with resource name: " + resourceName);
+            PeopleService peopleService = getPeopleService(authentication);
+            
+            Person person = peopleService.people().get(resourceName)
+                .setPersonFields("names,emailAddresses,phoneNumbers")
+                .execute();
+                
+            System.out.println("Successfully retrieved contact: " + resourceName);
+            return person;
+        } catch (Exception e) {
+            System.err.println("Error getting contact: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Rethrow to allow controller to handle it
         }
-        
-        return peopleService.people().updateContact(resourceName, person).execute();
     }
 
     public void deleteContact(
         OAuth2AuthenticationToken authentication, 
         String resourceName
     ) throws IOException {
-        PeopleService peopleService = getPeopleService(authentication);
-        peopleService.people().deleteContact(resourceName).execute();
+        try {
+            System.out.println("Attempting to delete contact with resource name: " + resourceName);
+            PeopleService peopleService = getPeopleService(authentication);
+            peopleService.people().deleteContact(resourceName).execute();
+            System.out.println("Successfully deleted contact: " + resourceName);
+        } catch (Exception e) {
+            System.err.println("Error deleting contact: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Rethrow to allow controller to handle it
+        }
     }
 }

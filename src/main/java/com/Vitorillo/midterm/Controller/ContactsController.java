@@ -100,12 +100,63 @@ public class ContactsController {
 
     @GetMapping("/edit/{resourceName}")
     public String showEditContactForm(
+        OAuth2AuthenticationToken authentication,
         @PathVariable String resourceName, 
         Model model
     ) {
-        // In a real implementation, fetch the specific contact details
-        model.addAttribute("resourceName", resourceName);
-        return "edit-contact";
+        try {
+            logger.info("Showing edit form for resourceName: " + resourceName);
+            // Fetch the specific contact details
+            try {
+                Person contact = contactsService.getContact(authentication, resourceName);
+                if (contact != null) {
+                    model.addAttribute("contact", contact);
+                    logger.info("Successfully retrieved contact details for editing");
+                }
+            } catch (Exception e) {
+                logger.warn("Could not fetch contact details: " + e.getMessage());
+                // Continue without contact details - form will be empty
+            }
+            model.addAttribute("resourceName", resourceName);
+            return "edit-contact";
+        } catch (Exception e) {
+            logger.error("Error showing edit form: " + e.getMessage(), e);
+            model.addAttribute("error", "Error loading contact: " + e.getMessage());
+            return "error";
+        }
+    }
+    
+    @GetMapping("/edit/people/{resourceName}")
+    public String showEditContactFormWithPeople(
+        OAuth2AuthenticationToken authentication,
+        @PathVariable String resourceName, 
+        Model model
+    ) {
+        try {
+            logger.info("Showing edit form with people/ prefix. ResourceName: " + resourceName);
+            // Create the full resource name for the People API
+            String fullResourceName = "people/" + resourceName;
+            logger.info("Full resource name: " + fullResourceName);
+            
+            // Fetch the specific contact details
+            try {
+                Person contact = contactsService.getContact(authentication, fullResourceName);
+                if (contact != null) {
+                    model.addAttribute("contact", contact);
+                    logger.info("Successfully retrieved contact details for editing");
+                }
+            } catch (Exception e) {
+                logger.warn("Could not fetch contact details: " + e.getMessage());
+                // Continue without contact details - form will be empty
+            }
+            
+            model.addAttribute("resourceName", fullResourceName);
+            return "edit-contact";
+        } catch (Exception e) {
+            logger.error("Error showing edit form with people/ prefix: " + e.getMessage(), e);
+            model.addAttribute("error", "Error loading contact: " + e.getMessage());
+            return "error";
+        }
     }
 
     @PostMapping("/edit/{resourceName}")
@@ -115,25 +166,92 @@ public class ContactsController {
         @RequestParam String firstName,
         @RequestParam String lastName,
         @RequestParam(required = false) String email,
-        @RequestParam(required = false) String phoneNumber
-    ) throws IOException {
-        contactsService.updateContact(
-            authentication, 
-            resourceName, 
-            firstName, 
-            lastName, 
-            email, 
-            phoneNumber
-        );
-        return "redirect:/contacts";
+        @RequestParam(required = false) String phoneNumber,
+        Model model
+    ) {
+        try {
+            logger.info("Updating contact with resourceName: " + resourceName);
+            contactsService.updateContact(
+                authentication, 
+                resourceName, 
+                firstName, 
+                lastName, 
+                email, 
+                phoneNumber
+            );
+            return "redirect:/contacts";
+        } catch (Exception e) {
+            logger.error("Error updating contact: " + e.getMessage(), e);
+            model.addAttribute("error", "Error updating contact: " + e.getMessage());
+            return "error";
+        }
+    }
+    
+    @PostMapping("/edit/people/{resourceName}")
+    public String updateContactWithPeople(
+        OAuth2AuthenticationToken authentication,
+        @PathVariable String resourceName,
+        @RequestParam String firstName,
+        @RequestParam String lastName,
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String phoneNumber,
+        Model model
+    ) {
+        try {
+            logger.info("Updating contact with people/ prefix. ResourceName: " + resourceName);
+            // Create the full resource name for the People API
+            String fullResourceName = "people/" + resourceName;
+            logger.info("Full resource name: " + fullResourceName);
+            contactsService.updateContact(
+                authentication, 
+                fullResourceName, 
+                firstName, 
+                lastName, 
+                email, 
+                phoneNumber
+            );
+            return "redirect:/contacts";
+        } catch (Exception e) {
+            logger.error("Error updating contact with people/ prefix: " + e.getMessage(), e);
+            model.addAttribute("error", "Error updating contact: " + e.getMessage());
+            return "error";
+        }
     }
 
     @GetMapping("/delete/{resourceName}")
     public String deleteContact(
         OAuth2AuthenticationToken authentication,
-        @PathVariable String resourceName
-    ) throws IOException {
-        contactsService.deleteContact(authentication, resourceName);
-        return "redirect:/contacts";
+        @PathVariable String resourceName,
+        Model model
+    ) {
+        try {
+            logger.info("Deleting contact with resourceName: " + resourceName);
+            contactsService.deleteContact(authentication, resourceName);
+            return "redirect:/contacts";
+        } catch (Exception e) {
+            logger.error("Error deleting contact: " + e.getMessage(), e);
+            model.addAttribute("error", "Error deleting contact: " + e.getMessage());
+            return "error";
+        }
+    }
+    
+    @GetMapping("/delete/people/{resourceName}")
+    public String deleteContactWithPeople(
+        OAuth2AuthenticationToken authentication,
+        @PathVariable String resourceName,
+        Model model
+    ) {
+        try {
+            logger.info("Deleting contact with people/ prefix. ResourceName: " + resourceName);
+            // Create the full resource name for the People API
+            String fullResourceName = "people/" + resourceName;
+            logger.info("Full resource name: " + fullResourceName);
+            contactsService.deleteContact(authentication, fullResourceName);
+            return "redirect:/contacts";
+        } catch (Exception e) {
+            logger.error("Error deleting contact with people/ prefix: " + e.getMessage(), e);
+            model.addAttribute("error", "Error deleting contact: " + e.getMessage());
+            return "error";
+        }
     }
 }

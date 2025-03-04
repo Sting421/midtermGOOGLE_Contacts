@@ -18,22 +18,30 @@
                         <form th:action="@{'/contacts/edit/' + ${resourceName}}" method="post">
                             <div class="mb-3">
                                 <label for="firstName" class="form-label">First Name*</label>
-                                <input type="text" class="form-control" id="firstName" name="firstName" required>
+                                <input type="text" class="form-control" id="firstName" name="firstName" required 
+                                       placeholder="Enter first name"
+                                       th:value="${contact != null && contact.names != null && !contact.names.isEmpty()} ? ${contact.names[0].givenName} : ''">
                             </div>
                             
                             <div class="mb-3">
                                 <label for="lastName" class="form-label">Last Name*</label>
-                                <input type="text" class="form-control" id="lastName" name="lastName" required>
+                                <input type="text" class="form-control" id="lastName" name="lastName" required 
+                                       placeholder="Enter last name"
+                                       th:value="${contact != null && contact.names != null && !contact.names.isEmpty()} ? ${contact.names[0].familyName} : ''">
                             </div>
                             
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email">
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="Enter email address"
+                                       th:value="${contact != null && contact.emailAddresses != null && !contact.emailAddresses.isEmpty()} ? ${contact.emailAddresses[0].value} : ''">
                             </div>
                             
                             <div class="mb-3">
                                 <label for="phoneNumber" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber">
+                                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" 
+                                       placeholder="Enter phone number"
+                                       th:value="${contact != null && contact.phoneNumbers != null && !contact.phoneNumbers.isEmpty()} ? ${contact.phoneNumbers[0].value} : ''">
                             </div>
                             
                             <div class="d-flex justify-content-between">
