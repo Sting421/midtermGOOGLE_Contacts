@@ -45,12 +45,12 @@ public class GoogleContactsService {
 
     public List<Person> listContacts(OAuth2AuthenticationToken authentication) throws IOException {
         PeopleService peopleService = getPeopleService(authentication);
-        
+
         return peopleService.people().connections()
-            .list("people/me")
-            .setPersonFields("names,emailAddresses,phoneNumbers")
-            .execute()
-            .getConnections();
+                .list("people/me")
+                .setPersonFields("names,emailAddresses,phoneNumbers,photos") // Add photos here
+                .execute()
+                .getConnections();
     }
 
     public Person createContact(
